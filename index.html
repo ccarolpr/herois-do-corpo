@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heróis do Corpo — Cartas (v2)</title>
+<style>
+  :root{ --bg:#0b0b16; --bg2:#11122a; --fg:#f2f4ff; --muted:#aab0d6; --accent:#70f0c3; --accent2:#8cb4ff; --card:#17183a; --card2:#1f2250; }
+  *{box-sizing:border-box}
+  body{ margin:0; color:var(--fg); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        background: radial-gradient(900px 600px at -10% -10%, rgba(112,240,195,0.15), transparent 60%),
+                   radial-gradient(900px 600px at 110% 10%, rgba(140,180,255,0.15), transparent 60%),
+                   linear-gradient(180deg, var(--bg), var(--bg2)); transition: font-size .2s ease, line-height .2s ease;}
+  header{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; position:sticky; top:0; z-index:20;
+          background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0)); border-bottom:1px solid rgba(255,255,255,0.08); }
+  .brand{display:flex; gap:12px; align-items:center}
+  .logo{width:38px;height:38px;border-radius:10px;background: conic-gradient(from 0deg, var(--accent) 0 25%, transparent 25% 50%, var(--accent2) 50% 75%, transparent 75% 100%), linear-gradient(135deg, var(--card2), var(--card)); box-shadow: 0 8px 24px rgba(112,240,195,0.2), inset 0 0 0 1px rgba(255,255,255,0.06);}
+  h1{font-size:18px;margin:0} .sub{font-size:12px;color:var(--muted)}
+  .btn{padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:800;font-size:12px;letter-spacing:.3px;border:1px solid rgba(255,255,255,0.14); color:#0b0c1a; background:linear-gradient(180deg, var(--accent2), #4c78eb); box-shadow: 0 8px 18px rgba(140,180,255,.25);}
+  .btn.secondary{ background:linear-gradient(180deg,#2a2f62,#1e234e); color:var(--fg) }
+  .btn.ghost{ background:transparent; color:var(--fg) }
+  .btn.ok{ background:linear-gradient(180deg,#70f0c3,#4fe4b1); color:#0b0c1a }
+  .counts{font-size:12px;color:var(--muted)}
+  .shell{padding:16px}
+  .board{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0)), linear-gradient(0deg, var(--card), var(--card)); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:14px; box-shadow: 0 12px 32px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.04); }
+  .stage{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+  .stage h2{font-size:16px;margin:0}
+  .grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:14px}
+  .cardWrap{ perspective: 1200px; }
+  .card{ position:relative; width:100%; height:175px; border-radius:14px; cursor:pointer; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.7,.2,1), opacity .4s; }
+  .card.is-flipped{ transform: rotateY(180deg) } .card.fade-out{ opacity:0; pointer-events:none }
+  .face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:14px; display:flex; align-items:center; justify-content:center; padding:12px; text-align:center; }
+  .front{ background: radial-gradient(120px 60px at 15% -10%, rgba(112,240,195,0.20), transparent 60%), radial-gradient(120px 60px at 115% 0%, rgba(140,180,255,0.20), transparent 60%), linear-gradient(180deg, var(--card2), var(--card)); border:1px solid rgba(255,255,255,0.14); box-shadow: 0 10px 26px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.04); }
+  .numchip{ width:62px; height:62px; border-radius:12px; display:flex; align-items:center; justify-content:center; background: linear-gradient(180deg, var(--accent), #4fe4b1); color:#0b0c1a; font-weight:900; font-size:24px; letter-spacing:.5px; border:1px solid rgba(0,0,0,0.15); box-shadow: 0 10px 24px rgba(112,240,195,0.25); }
+  .back{ transform: rotateY(180deg); background: linear-gradient(180deg, #1e224c, #1a1c3e); border:1px solid rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); color:var(--fg); font-size:18px; line-height:1.35; padding:14px; }
+  .overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(10,12,26,0.84); backdrop-filter: blur(4px); z-index:30; padding:16px; }
+  .overlay.show{ display:flex }
+  .resultCard{ width:min(980px, 96vw); background: linear-gradient(180deg, #1e224c, #191b3a); border:1px solid rgba(255,255,255,0.14); border-radius:18px; padding:22px; display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  @media (max-width: 820px){ .resultCard{ grid-template-columns: 1fr } }
+  .col{background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0)); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px}
+  .kicker{font-size:12px; color:var(--muted); letter-spacing:1px; text-transform:uppercase}
+  .big{font-size:22px; font-weight:800; line-height:1.25}
+  .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .counts{margin-left:8px}
+  body.palco .grid{ grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:18px }
+  body.palco .card{ height:220px } body.palco .numchip{ width:78px; height:78px; font-size:30px } body.palco .back{ font-size:24px; line-height:1.4; }
+  body.palco .resultCard{ width:min(1200px,96vw); } body.palco .big{ font-size:30px } body.palco header{ position:static }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <div><h1>Heróis do Corpo — Cartas</h1><div class="sub">Etapas: 1) Situação • 2) Superpoder</div></div>
+  </div>
+  <div class="toolbar">
+    <button class="btn secondary" id="newRound">Nova rodada (Enter/Espaço)</button>
+    <button class="btn ghost" id="reshuffle">Embaralhar (S)</button>
+    <button class="btn ghost" id="resetDecks">Repor baralhos (R)</button>
+    <button class="btn ok" id="palcoToggle">Modo Palco (P)</button>
+    <button class="btn ghost" id="fullToggle">Tela Cheia (F)</button>
+    <span class="counts" id="counts"></span>
+  </div>
+</header>
+<div class="shell">
+  <section class="board">
+    <div class="stage"><h2 id="stageTitle">Etapa 1 — Escolha uma Situação</h2></div>
+    <div class="grid" id="grid"></div>
+  </section>
+</div>
+<div class="overlay" id="overlay">
+  <div class="resultCard">
+    <div class="col"><div class="kicker">Situação</div><div class="big" id="selSitu">—</div></div>
+    <div class="col"><div class="kicker">Superpoder</div><div class="big" id="selPow">—</div></div>
+    <div style="grid-column:1/-1; display:flex; gap:8px; justify-content:flex-end"><button class="btn" id="closeOverlay">Fechar</button></div>
+  </div>
+</div>
+<script>
+const DEFAULT_SITU = [
+  "O som do microfone solta um grito do nada.",
+  "O wi-fi some bem na hora do reels.",
+  "O refrigerante acabou, só sobrou água da garrafa.",
+  "A pizza chegou… com sabor errado.",
+  "Alguém esqueceu a letra do louvor no meio.",
+  "O projetor resolveu atualizar sozinho.",
+  "A música travou na playlist do culto.",
+  "Um visitante novo entrou e ninguém sabe se apresenta.",
+  "A comida do pós-culto não deu pra todo mundo.",
+  "Tentaram tirar foto, mas sempre alguém piscou.",
+  "A galera ficou sem carona na volta.",
+  "O jogo de futebol terminou em briga.",
+  "O culto atrasou porque ninguém sabia quem ia abrir.",
+  "Alguém trouxe brigadeiro queimado pro lanche.",
+  "O grupo de WhatsApp não para de notificação.",
+  "O louvor parou porque caiu a energia.",
+  "Esqueceram os copos pro refrigerante.",
+  "A chuva pegou todo mundo sem guarda-chuva.",
+  "Um amigo chegou triste porque levou fora.",
+  "Todo mundo ficou calado quando pediram voluntário."
+];
+const DEFAULT_POW = [
+  "Sabedoria Laser — ilumina o melhor caminho até no meio da bagunça.",
+  "Wi-Fi de Conhecimento — conecta direto na nuvem divina e baixa respostas.",
+  "Escudo da Fé — protege até contra cobrança de boleto.",
+  "Toque de Cura — transforma dodói em testemunho.",
+  "Bug do Milagre — quando tudo trava, você reinicia com milagre.",
+  "Voz Profética — fala e até o silêncio responde.",
+  "Detector de Fake — revela quando algo é só “migué espiritual”.",
+  "Turbo Línguas — ora tão rápido que parece rap gospel.",
+  "Legenda Instantânea — explica o que ninguém entendeu.",
+  "GPS da Palavra — mostra a rota bíblica pra quem se perdeu.",
+  "Boost de Ânimo — recarrega pessoas como powerbank.",
+  "Mão Invisível — resolve as coisas sem ninguém ver.",
+  "Coração Generoso — multiplica coxinha no pós-culto.",
+  "Bússola de Liderança — aponta a direção certa.",
+  "Cobertor da Misericórdia — esquenta quem está frio por dentro.",
+  "Planilha Celestial — organiza qualquer bagunça.",
+  "Socorro Flash — aparece na hora do aperto.",
+  "Imã da Unidade — cola até quem brigou no futebol.",
+  "Voz Calmante — abaixa a ansiedade instantaneamente.",
+  "Cola da Paz — reconcilia amizades rachadas."
+];
+
+// helpers
+function readLS(k,f){ try{ const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v)?v:f; }catch{ return f; }}
+function saveLS(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+// state
+let deckSitu = readLS("hc_deck_situ", DEFAULT_SITU.slice());
+let deckPow  = readLS("hc_deck_pow", DEFAULT_POW.slice());
+let stage = localStorage.getItem("hc_stage2") || "situ";
+let orderSitu = [], orderPow = [];
+let chosenSitu = null, chosenPow = null;
+
+// els
+const grid = document.getElementById("grid");
+const stageTitle = document.getElementById("stageTitle");
+const counts = document.getElementById("counts");
+const newRoundBtn = document.getElementById("newRound");
+const reshuffleBtn = document.getElementById("reshuffle");
+const resetDecksBtn = document.getElementById("resetDecks");
+const overlay = document.getElementById("overlay");
+const selSitu = document.getElementById("selSitu");
+const selPow = document.getElementById("selPow");
+const closeOverlay = document.getElementById("closeOverlay");
+const palcoToggle = document.getElementById("palcoToggle");
+const fullToggle = document.getElementById("fullToggle");
+
+function updateCounts(){
+  counts.textContent = `Restantes — Situações: ${deckSitu.length} • Superpoderes: ${deckPow.length}`;
+}
+
+function shuffleOrder(n){
+  const arr = [...Array(n).keys()];
+  for(let i=n-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function renderBoard(){
+  grid.innerHTML = "";
+  updateCounts();
+  if(stage === "situ"){
+    stageTitle.textContent = "Etapa 1 — Escolha uma Situação";
+    orderSitu = shuffleOrder(deckSitu.length);
+    orderSitu.forEach((idx, pos)=> createCard(deckSitu[idx], pos+1, "situ", idx));
+  }else{
+    stageTitle.textContent = "Etapa 2 — Escolha um Superpoder";
+    orderPow = shuffleOrder(deckPow.length);
+    orderPow.forEach((idx, pos)=> createCard(deckPow[idx], pos+1, "pow", idx));
+  }
+}
+
+function createCard(text, visibleNumber, type, realIndex){
+  const wrap = document.createElement("div");
+  wrap.className = "cardWrap";
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.type = type;
+  card.dataset.idx = realIndex;
+
+  const front = document.createElement("div");
+  front.className = "face front";
+  const chip = document.createElement("div");
+  chip.className = "numchip";
+  chip.textContent = visibleNumber;
+  front.appendChild(chip);
+
+  const back = document.createElement("div");
+  back.className = "face back";
+  back.textContent = text;
+
+  card.appendChild(front); card.appendChild(back); wrap.appendChild(card);
+  grid.appendChild(wrap);
+
+  card.addEventListener("click", ()=>flipCard(card));
+}
+
+function flipCard(card){
+  if(card.classList.contains("is-flipped")) return;
+  card.classList.add("is-flipped");
+
+  [...document.querySelectorAll(".card")].forEach(c=>{ if(c!==card) c.style.pointerEvents="none"; });
+
+  setTimeout(()=>{
+    const type = card.dataset.type;
+    const idx = parseInt(card.dataset.idx,10);
+    if(type === "situ"){
+      chosenSitu = deckSitu[idx];
+      deckSitu.splice(idx,1);
+      saveLS("hc_deck_situ", deckSitu);
+      card.classList.add("fade-out");
+      setTimeout(()=>{
+        stage = "pow"; localStorage.setItem("hc_stage2", stage);
+        renderBoard();
+      }, 420);
+    }else{
+      chosenPow = deckPow[idx];
+      deckPow.splice(idx,1);
+      saveLS("hc_deck_pow", deckPow);
+      card.classList.add("fade-out");
+      setTimeout(()=>{ showResult(); }, 350);
+    }
+  }, 650);
+}
+
+function showResult(){
+  selSitu.textContent = chosenSitu || "—";
+  selPow.textContent = chosenPow || "—";
+  overlay.classList.add("show");
+}
+
+function newRound(){
+  overlay.classList.remove("show");
+  chosenSitu = null; chosenPow = null;
+  stage = "situ"; localStorage.setItem("hc_stage2", stage);
+  renderBoard();
+}
+
+function reshuffle(){
+  renderBoard();
+}
+
+function resetDecks(){
+  if(!confirm("Repor os baralhos completos?")) return;
+  deckSitu = DEFAULT_SITU.slice();
+  deckPow  = DEFAULT_POW.slice();
+  saveLS("hc_deck_situ", deckSitu);
+  saveLS("hc_deck_pow", deckPow);
+  chosenSitu = null; chosenPow = null;
+  stage = "situ"; localStorage.setItem("hc_stage2", stage);
+  renderBoard();
+}
+
+function togglePalco(){
+  document.body.classList.toggle("palco");
+}
+
+function toggleFullscreen(){
+  const d=document, el=d.documentElement;
+  if(!d.fullscreenElement){
+    if(el.requestFullscreen) el.requestFullscreen();
+  } else {
+    if(d.exitFullscreen) d.exitFullscreen();
+  }
+}
+
+window.addEventListener("keydown", (e)=>{
+  const k = e.key.toLowerCase();
+  if(k==="p") togglePalco();
+  if(k==="f") toggleFullscreen();
+  if(k==="s") reshuffle();
+  if(k==="r") resetDecks();
+  if(k==="enter" || k===" "){
+    e.preventDefault();
+    if(overlay.classList.contains("show")) newRound(); else newRound();
+  }
+});
+
+newRoundBtn.addEventListener("click", newRound);
+reshuffleBtn.addEventListener("click", reshuffle);
+resetDecksBtn.addEventListener("click", resetDecks);
+palcoToggle.addEventListener("click", togglePalco);
+fullToggle.addEventListener("click", toggleFullscreen);
+closeOverlay.addEventListener("click", ()=>{ overlay.classList.remove("show"); newRound(); });
+overlay.addEventListener("click", (e)=>{ if(e.target===overlay){ overlay.classList.remove("show"); newRound(); } });
+
+renderBoard();
+</script>
+</body>
+</html>
